@@ -45,7 +45,7 @@ export class Paciente implements IAutenticavel {
   @Column()
     telefone: string
 
-  @Column()
+  @Column({ type: 'simple-array', nullable: true })
     imagemUrl: string
 
   @Column({ type: 'boolean', default: true })
