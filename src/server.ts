@@ -15,6 +15,8 @@ import rotaPaciente from './pacientes/pacienteRoutes.js'
 import rotaPlanoDeSaude from './planosDeSaude/planosDeSaudeRoutes.js'
 import faltamVariaveisDeAmbiente from './utils/serverUtils.js'
 import { resolve, dirname } from 'path'
+import { logger } from './logger.js'
+import pino_http from 'pino-http'
 
 const __filename = import.meta.url.substring(7)
 const __dirname = dirname(__filename)
@@ -22,6 +24,10 @@ const __dirname = dirname(__filename)
 await faltamVariaveisDeAmbiente()
 
 dotenv.config({ path: '.env' })
+
+const loggerHttp = pino_http({
+  logger,
+})
 
 const app = express()
 
@@ -39,6 +45,7 @@ const corsOpts = {
 }
 
 app.use(cors(corsOpts))
+app.use(loggerHttp)
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true })) // envio de arquivo

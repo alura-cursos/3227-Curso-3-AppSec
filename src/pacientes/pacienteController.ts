@@ -10,6 +10,7 @@ import { AppError, Status } from '../error/ErrorHandler.js'
 import { encryptPassword } from '../utils/senhaUtils.js'
 import { pacienteSchema } from './pacienteYupSchema.js';
 import { sanitizacaoPaciente } from './pacienteSanitizations.js'
+import { logger } from '../logger.js'
 
 export const consultaPorPaciente = async (
   req: Request,
@@ -35,6 +36,7 @@ export const criarPaciente = async (
   req: Request,
   res: Response
 ): Promise<void> => {
+    req.log.info('Criando paciente')
     const pacienteData = req.body
 
     const pacienteSanitizado: Paciente = sanitizacaoPaciente(pacienteData)

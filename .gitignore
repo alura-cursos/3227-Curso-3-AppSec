@@ -7,3 +7,4 @@ temp/
 db_data/
 database/
 mysql
+logs

@@ -5,6 +5,7 @@ import { access, refresh } from './tokens.js'
 import { AppDataSource } from '../data-source.js'
 import { AppError } from '../error/ErrorHandler.js'
 import { decryptPassword } from '../utils/senhaUtils.js'
+import { logger } from '../logger.js'
 
 export const login = async (req: Request, res: Response): Promise<Response> => {
   const { email, senha } = req.body
@@ -16,6 +17,7 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
     })
 
     if (autenticavel == null) {
+      req.log.error('Não encontrado!')
       throw new AppError('Não encontrado!', 404)
     }
 
@@ -35,12 +37,14 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
   })
 
   if (autenticavel == null) {
+    req.log.error('Não encontrado!')
     throw new AppError('Não encontrado!', 404)
   } else {
     const { id, rota, role, senha: senhaAuth } = autenticavel
     const senhaCorrespondente = decryptPassword(senhaAuth)
 
     if (senha !== senhaCorrespondente) {
+      req.log.error('Senha incorreta!')
       throw new AppError('Senha incorreta!', 401)
     }
 
