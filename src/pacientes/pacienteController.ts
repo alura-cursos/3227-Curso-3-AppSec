@@ -35,7 +35,6 @@ export const criarPaciente = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  try {
     const pacienteData = req.body
 
     const pacienteSanitizado: Paciente = sanitizacaoPaciente(pacienteData)
@@ -64,7 +63,7 @@ export const criarPaciente = async (
       where: { cpf }
     })
     if (existePacienteComCPF != null) {
-      res.status(409).json({ message: 'Já existe um paciente com esse CPF!' })
+      throw new AppError('Já existe um paciente com esse CPF!', Status.CONFLICT)
     }
 
     if (possuiPlanoSaude === true && planosSaude !== undefined) {
@@ -88,6 +87,7 @@ export const criarPaciente = async (
     paciente.possuiPlanoSaude = possuiPlanoSaude
     const enderecoPaciente = new Endereco()
 
+  try {
     if (endereco !== undefined) {
       enderecoPaciente.cep = endereco.cep
       enderecoPaciente.rua = endereco.rua
@@ -106,12 +106,8 @@ export const criarPaciente = async (
 
     res.status(202).json(pacienteSemDadosSensiveis)
   } catch (error) {
-    if (error.name === 'ValidationError') {
-      res.status(400).json({ message: error.message })
-    } else {
-      res.status(502).json({ 'Paciente não foi criado': error })
-      console.log(error)
-    }
+    console.log(error)
+    throw new AppError('Paciente não foi criado', Status.BAD_GATEWAY)
   }
 }
 
