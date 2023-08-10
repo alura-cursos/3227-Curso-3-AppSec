@@ -13,9 +13,7 @@ function verificaTokenJWT (...role: Role[]) {
 
     // Nenhuma token informado
     if (!token) {
-      return res
-        .status(403)
-        .json({ auth: false, message: 'Nenhum token informado.' })
+      throw new AppError('Nenhum token informado.', Status.FORBIDDEN)
     }
     // Verifica se o token é válido
     await access.verifica(token)
@@ -23,13 +21,12 @@ function verificaTokenJWT (...role: Role[]) {
     // Verifica se o token é válido
     jwt.verify(token, process.env.SECRET_JWT, function (err, decoded) {
       if (err) {
-        return res
-          .status(403)
-          .json({ auth: false, message: 'Falha ao autenticar o token. Token expirou' })
+        req.security_log.error({token}, 'Falha ao autenticar o token. Token expirou!')
+        throw new AppError('Falha ao autenticar o token. Token expirou', Status.FORBIDDEN)
       }
 
       if (role.length > 0 && !role.includes(decoded.role)) {
-        return res.status(403).json({ auth: false, message: 'Não autorizado' })
+        throw new AppError('Não autorizado', Status.FORBIDDEN)
       }
 
       req.userId = decoded.id

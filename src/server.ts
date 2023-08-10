@@ -15,8 +15,9 @@ import rotaPaciente from './pacientes/pacienteRoutes.js'
 import rotaPlanoDeSaude from './planosDeSaude/planosDeSaudeRoutes.js'
 import faltamVariaveisDeAmbiente from './utils/serverUtils.js'
 import { resolve, dirname } from 'path'
-import { logger } from './logger.js'
+import { logger, loggerSecurity } from './logger.js'
 import pino_http from 'pino-http'
+import pino from 'pino'
 
 const __filename = import.meta.url.substring(7)
 const __dirname = dirname(__filename)
@@ -28,6 +29,24 @@ dotenv.config({ path: '.env' })
 const loggerHttp = pino_http({
   logger,
 })
+
+declare module 'express' {
+  interface Request {
+    security_log: pino.Logger
+  }
+}
+
+const loggerSecurityMiddleware = (req, res, next) => {
+  req.security_log = loggerSecurity.child({
+    req: {
+      method: req.method,
+      url: req.url,
+      headers: req.headers,
+      id: req.id,
+    }
+  })
+  next()
+}
 
 const app = express()
 
@@ -46,6 +65,7 @@ const corsOpts = {
 
 app.use(cors(corsOpts))
 app.use(loggerHttp)
+app.use(loggerSecurityMiddleware)
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true })) // envio de arquivo
